@@ -512,7 +512,7 @@ endif
 BUILD_DEBUG_VERSION := y
 
 #Enable this flag to build driver in diag version
-BUILD_DIAG_VERSION := y
+BUILD_DIAG_VERSION := n
 
 ifeq ($(CONFIG_SLUB_DEBUG), y)
 	PANIC_ON_BUG := y
@@ -537,7 +537,7 @@ CONFIG_WLAN_LOG_EXIT := y
 CONFIG_ATH_PERF_PWR_OFFLOAD := y
 
 #Disable packet log
-CONFIG_REMOVE_PKT_LOG := n
+CONFIG_REMOVE_PKT_LOG := y
 
 #Enable 11AC TX
 ifeq ($(CONFIG_ROME_IF),pci)
@@ -973,9 +973,7 @@ ifeq ($(CONFIG_ARCH_SDXPRAIRIE), y)
 	CONFIG_WMI_DBR_SUPPORT := n
 endif
 
-ifneq ($(CONFIG_HIF_USB), y)
-CONFIG_WLAN_LOGGING_SOCK_SVC := y
-endif
+CONFIG_WLAN_LOGGING_SOCK_SVC := n
 
 ifneq ($(TARGET_BUILD_VARIANT),user)
 CONFIG_DESC_DUP_DETECT_DEBUG := y
