@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2018, 2020, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -72,6 +73,7 @@
 #define SQ_CTRL1_CHIRP_DISABLE		0x20
 #define SQ_CTRL2_CHIRP_DISABLE		0x80
 
+#define PORT_TUNE1_OVERRIDE_VAL		0xc5
 #define DEBUG_CTRL1_OVERRIDE_VAL	0x09
 
 /* PERIPH_SS_PHY_REFGEN_NORTH_BG_CTRL register bits */
@@ -130,13 +132,19 @@ struct qusb_phy {
 	int			qusb_phy_reg_offset_cnt;
 
 	u32			tune_val;
+	u32			efuse_value;
+	u32			tune_pll_bias;
+	u32			bias_ctrl_val;
+	int			tune_efuse_correction;
 	int			efuse_bit_pos;
 	int			efuse_num_of_bits;
 
 	int			power_enabled_ref;
+	bool			clocks_enabled;
 	bool			cable_connected;
 	bool			suspended;
 	bool			dpdm_enable;
+	bool			efuse_pll_bias;
 
 	struct regulator_desc	dpdm_rdesc;
 	struct regulator_dev	*dpdm_rdev;
@@ -164,6 +172,9 @@ struct qusb_phy {
 	u8			tune[5];
 	u8                      bias_ctrl2;
 
+	/*xiaomi: debug fs for imp_ctr and pll_bais*/
+	u8                      imp_ctrl;
+	u8                      pll_bias;
 	struct hrtimer		timer;
 	int			soc_min_rev;
 	bool			host_chirp_erratum;
@@ -437,6 +448,35 @@ static void qusb_phy_get_tune1_param(struct qusb_phy *qphy)
 
 	qphy->tune_val = TUNE_VAL_MASK(qphy->tune_val,
 				qphy->efuse_bit_pos, bit_mask);
+	if(qphy->tune_efuse_correction) {
+		int corrected_val = qphy->tune_val + qphy->tune_efuse_correction;
+		if (corrected_val < 0)
+			qphy->tune_val = 0;
+		else
+			qphy->tune_val = min_t(unsigned, corrected_val, 0x7);
+	pr_info("%s(): adjust tune1 value to:%d, correction value = %d\n",
+							__func__, qphy->tune_val, qphy->tune_efuse_correction);
+	}
+
+	pr_info("%s(): tune_value:%d efuse_pll_bias:%d\n",
+			 __func__, qphy->tune_val, qphy->efuse_pll_bias);
+
+	qphy->efuse_value = qphy->tune_val;
+
+	if(qphy->efuse_pll_bias) {
+		switch (qphy->tune_val) {
+			case 0:
+			case 1:
+			case 3:
+			case 5:
+				qphy->tune_pll_bias = 0x20;
+				break;
+			default:
+				qphy->tune_pll_bias = 0x20;
+                                break;
+		}
+	}
+
 	reg = readb_relaxed(qphy->base + qphy->phy_reg[PORT_TUNE1]);
 	if (qphy->tune_val) {
 		reg = reg & 0x0f;
@@ -581,12 +621,15 @@ static int qusb_phy_init(struct usb_phy *phy)
 	struct qusb_phy *qphy = container_of(phy, struct qusb_phy, phy);
 	int ret, p_index;
 	u8 reg;
+	int val;
 
 	dev_dbg(phy->dev, "%s\n", __func__);
 
 	ret = qusb_phy_enable_power(qphy, true);
 	if (ret)
 		return ret;
+
+	qusb_phy_enable_clocks(qphy, true);
 
 	qusb_phy_reset(qphy);
 
@@ -647,13 +690,17 @@ static int qusb_phy_init(struct usb_phy *phy)
 	}
 
 	if (qphy->refgen_north_bg_reg && qphy->override_bias_ctrl2)
-		if (readl_relaxed(qphy->refgen_north_bg_reg) & BANDGAP_BYPASS)
-			writel_relaxed(BIAS_CTRL_2_OVERRIDE_VAL,
-				qphy->base + qphy->phy_reg[BIAS_CTRL_2]);
+	 /*xiaomi: debug fs for imp_ctr and pll_bais*/
+		if(qphy->imp_ctrl)
+			writel_relaxed(qphy->imp_ctrl, qphy->base + 0x220);
 
-	if (qphy->bias_ctrl2)
-		writel_relaxed(qphy->bias_ctrl2,
-				qphy->base + qphy->phy_reg[BIAS_CTRL_2]);
+	if(qphy->tune_pll_bias) {
+		writel_relaxed(qphy->tune_pll_bias, qphy->base + 0x198);
+	}
+	if(qphy->pll_bias) {
+		writel_relaxed(qphy->pll_bias, qphy->base + 0x198);
+	}
+
 
 	/* ensure above writes are completed before re-enabling PHY */
 	wmb();
@@ -1081,6 +1128,36 @@ static int qusb_phy_create_debugfs(struct qusb_phy *qphy)
 		goto create_err;
 	}
 
+	/*xiaomi: debug fs for imp_ctr and pll_bais*/
+	file = debugfs_create_x8("imp_ctrl", 0644, qphy->root,
+						&qphy->imp_ctrl);
+		if (IS_ERR_OR_NULL(file)) {
+			dev_err(qphy->phy.dev,
+				"can't create debugfs entry for %s\n", name);
+			debugfs_remove_recursive(qphy->root);
+			ret = ENOMEM;
+			goto create_err;
+		}
+	file = debugfs_create_x8("pll_bias", 0644, qphy->root,
+						&qphy->pll_bias);
+		if (IS_ERR_OR_NULL(file)) {
+			dev_err(qphy->phy.dev,
+				"can't create debugfs entry for %s\n", name);
+			debugfs_remove_recursive(qphy->root);
+			ret = ENOMEM;
+			goto create_err;
+		}
+
+	file = debugfs_create_x32("efuse_value", 0444, qphy->root,
+						&qphy->efuse_value);
+	if (IS_ERR_OR_NULL(file)) {
+		dev_err(qphy->phy.dev,
+			"can't create debugfs entry for efuse_value\n");
+		debugfs_remove_recursive(qphy->root);
+		ret = -ENOMEM;
+		goto create_err;
+	}
+
 create_err:
 	return ret;
 }
@@ -1128,6 +1205,9 @@ static int qusb_phy_probe(struct platform_device *pdev)
 						&qphy->efuse_num_of_bits);
 			}
 
+			of_property_read_u32(dev->of_node,
+								"qcom,tune-efuse-correction",
+								&qphy->tune_efuse_correction);
 			if (ret) {
 				dev_err(dev,
 				"DT Value for efuse is invalid.\n");
