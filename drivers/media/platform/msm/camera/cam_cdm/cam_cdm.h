@@ -1,5 +1,4 @@
 /* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -200,7 +199,7 @@ struct cam_cdm_hw_intf_cmd_submit_bl {
 struct cam_cdm_hw_mem {
 	int32_t handle;
 	uint32_t vaddr;
-	uint64_t kmdvaddr;
+	uintptr_t kmdvaddr;
 	size_t size;
 };
 

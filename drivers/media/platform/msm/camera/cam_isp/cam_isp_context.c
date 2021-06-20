@@ -27,7 +27,7 @@
 #include "cam_context_utils.h"
 #include "cam_common_util.h"
 
-static const char isp_dev_name[] = "isp";
+static const char isp_dev_name[] = "cam-isp";
 
 static int cam_isp_context_dump_active_request(void *data, unsigned long iova,
 	uint32_t buf_info);
@@ -237,41 +237,41 @@ static const char *__cam_isp_resource_handle_id_to_type(
 {
 	switch (resource_handle) {
 	case CAM_ISP_IFE_OUT_RES_FULL:
-		return "CAM_ISP_IFE_OUT_RES_FULL";
+		return "FULL";
 	case CAM_ISP_IFE_OUT_RES_DS4:
-		return "CAM_ISP_IFE_OUT_RES_DS4";
+		return "DS4";
 	case CAM_ISP_IFE_OUT_RES_DS16:
-		return "CAM_ISP_IFE_OUT_RES_DS16";
+		return "DS16";
 	case CAM_ISP_IFE_OUT_RES_RAW_DUMP:
-		return "CAM_ISP_IFE_OUT_RES_RAW_DUMP";
+		return "RAW_DUMP";
 	case CAM_ISP_IFE_OUT_RES_FD:
-		return "CAM_ISP_IFE_OUT_RES_FD";
+		return "FD";
 	case CAM_ISP_IFE_OUT_RES_PDAF:
-		return "CAM_ISP_IFE_OUT_RES_PDAF";
+		return "PDAF";
 	case CAM_ISP_IFE_OUT_RES_RDI_0:
-		return "CAM_ISP_IFE_OUT_RES_RDI_0";
+		return "RDI_0";
 	case CAM_ISP_IFE_OUT_RES_RDI_1:
-		return "CAM_ISP_IFE_OUT_RES_RDI_1";
+		return "RDI_1";
 	case CAM_ISP_IFE_OUT_RES_RDI_2:
-		return "CAM_ISP_IFE_OUT_RES_RDI_2";
+		return "RDI_2";
 	case CAM_ISP_IFE_OUT_RES_RDI_3:
-		return "CAM_ISP_IFE_OUT_RES_RDI_3";
+		return "RDI_3";
 	case CAM_ISP_IFE_OUT_RES_STATS_HDR_BE:
-		return "CAM_ISP_IFE_OUT_RES_STATS_HDR_BE";
+		return "STATS_HDR_BE";
 	case CAM_ISP_IFE_OUT_RES_STATS_HDR_BHIST:
-		return "CAM_ISP_IFE_OUT_RES_STATS_HDR_BHIST";
+		return "STATS_HDR_BHIST";
 	case CAM_ISP_IFE_OUT_RES_STATS_TL_BG:
-		return "CAM_ISP_IFE_OUT_RES_STATS_TL_BG";
+		return "STATS_TL_BG";
 	case CAM_ISP_IFE_OUT_RES_STATS_BF:
-		return "CAM_ISP_IFE_OUT_RES_STATS_BF";
+		return "STATS_BF";
 	case CAM_ISP_IFE_OUT_RES_STATS_AWB_BG:
-		return "CAM_ISP_IFE_OUT_RES_STATS_AWB_BG";
+		return "STATS_AWB_BG";
 	case CAM_ISP_IFE_OUT_RES_STATS_BHIST:
-		return "CAM_ISP_IFE_OUT_RES_STATS_BHIST";
+		return "STATS_BHIST";
 	case CAM_ISP_IFE_OUT_RES_STATS_RS:
-		return "CAM_ISP_IFE_OUT_RES_STATS_RS";
+		return "STATS_RS";
 	case CAM_ISP_IFE_OUT_RES_STATS_CS:
-		return "CAM_ISP_IFE_OUT_RES_STATS_CS";
+		return "STATS_CS";
 	default:
 		return "CAM_ISP_Invalid_Resource_Type";
 	}
@@ -1172,17 +1172,6 @@ static struct cam_isp_ctx_irq_ops
 	/* HALT */
 	{
 	},
-	/* FLUSH */
-	{
-		.irq_ops = {
-			NULL,
-			__cam_isp_ctx_sof_in_flush,
-			NULL,
-			NULL,
-			NULL,
-			__cam_isp_ctx_buf_done_in_applied,
-		},
-	},
 };
 
 static int __cam_isp_ctx_apply_req_in_activated_state(
@@ -1554,12 +1543,6 @@ static struct cam_ctx_ops
 		.irq_ops = NULL,
 	},
 	/* HALT */
-	{
-		.ioctl_ops = {},
-		.crm_ops = {},
-		.irq_ops = NULL,
-	},
-	/* FLUSH */
 	{
 		.ioctl_ops = {},
 		.crm_ops = {},
@@ -1964,17 +1947,6 @@ static struct cam_isp_ctx_irq_ops
 	},
 	/* HALT */
 	{
-	},
-	/* FLUSH */
-	{
-		.irq_ops = {
-			NULL,
-			__cam_isp_ctx_sof_in_flush,
-			NULL,
-			NULL,
-			NULL,
-			__cam_isp_ctx_buf_done_in_applied,
-		},
 	},
 };
 

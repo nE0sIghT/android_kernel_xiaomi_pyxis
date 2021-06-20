@@ -41,7 +41,6 @@
 #include "pinctrl-msm.h"
 #include "../pinctrl-utils.h"
 #include <linux/wakeup_reason.h>
-#include <soc/qcom/socinfo.h>
 
 #define MAX_NR_GPIO 300
 #define PS_HOLD_OFFSET 0x820
@@ -236,15 +235,11 @@ static int msm_config_group_get(struct pinctrl_dev *pctldev,
 	unsigned bit;
 	int ret;
 	u32 val;
-	uint32_t hw_platform = get_hw_version_platform();
 
 	/* bypass the NFC SPI gpios */
-	if (hw_platform == HARDWARE_PLATFORM_GRUS ||
-	    hw_platform == HARDWARE_PLATFORM_PYXIS ||
-	    hw_platform == HARDWARE_PLATFORM_VELA) {
-		if (group < 4)
-			return 0;
-	}
+	if (group < 4)
+		return 0;
+
 	/* bypass the FingerPrint gpios */
 	if ((group > 80 && group < 85) || (group == 121))
 		return 0;
@@ -523,12 +518,9 @@ static void msm_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
 
 	for (i = 0; i < chip->ngpio; i++, gpio++) {
 		/* bypass the NFC SPI gpios */
-		if (get_hw_version_platform() == HARDWARE_PLATFORM_GRUS ||
-		    get_hw_version_platform() == HARDWARE_PLATFORM_PYXIS ||
-		    get_hw_version_platform() == HARDWARE_PLATFORM_VELA) {
-			if (i < 4)
-				continue;
-		}
+		if (i < 4)
+			continue;
+
 		/* bypass the FingerPrint gpios */
 		if ((i > 80 && i < 85) || (i == 121))
 			continue;

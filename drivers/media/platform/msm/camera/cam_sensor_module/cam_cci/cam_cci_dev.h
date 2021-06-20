@@ -1,5 +1,4 @@
 /* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
- * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -47,7 +46,7 @@
 #define CYCLES_PER_MICRO_SEC_DEFAULT 4915
 #define CCI_MAX_DELAY 1000000
 
-#define CCI_TIMEOUT msecs_to_jiffies(500)
+#define CCI_TIMEOUT msecs_to_jiffies(1500)
 
 #define NUM_MASTERS 2
 #define NUM_QUEUES 2
@@ -74,12 +73,6 @@
 #define CCI_I2C_MAX_BYTE_COUNT 65535
 
 #define CAMX_CCI_DEV_NAME "cam-cci-driver"
-
-/* Max bytes that can be read per CCI read transaction */
-#define CCI_READ_MAX 12
-#define CCI_I2C_READ_MAX_RETRIES 3
-#define CCI_I2C_MAX_READ 8192
-#define CCI_I2C_MAX_WRITE 8192
 
 #define PRIORITY_QUEUE (QUEUE_0)
 #define SYNC_QUEUE (QUEUE_1)
@@ -214,7 +207,6 @@ struct cci_device {
 	struct cam_hw_soc_info soc_info;
 	uint32_t hw_version;
 	uint8_t ref_count;
-	uint8_t ref_count_cci[MASTER_MAX];
 	enum cam_cci_state_t cci_state;
 	struct cam_cci_i2c_queue_info
 		cci_i2c_queue_info[NUM_MASTERS][NUM_QUEUES];

@@ -15,14 +15,9 @@
 #include "cam_cci_soc.h"
 #include "cam_cci_core.h"
 
-#include <soc/qcom/socinfo.h>
-
 #define CCI_MAX_DELAY 1000000
-#define CCI_TIMEOUT msecs_to_jiffies(500)
 
 static struct v4l2_subdev *g_cci_subdev;
-
-uint32_t hw_version_platform;
 
 struct v4l2_subdev *cam_cci_get_subdev(void)
 {
@@ -403,6 +398,7 @@ static struct platform_driver cci_driver = {
 		.name = CAMX_CCI_DEV_NAME,
 		.owner = THIS_MODULE,
 		.of_match_table = cam_cci_dt_match,
+		.suppress_bind_attrs = true,
 	},
 };
 
@@ -417,8 +413,6 @@ static int cam_cci_assign_fops(void)
 		return -EINVAL;
 	}
 	sd->devnode->fops = &cci_v4l2_subdev_fops;
-
-	hw_version_platform = get_hw_version_platform();
 
 	return 0;
 }

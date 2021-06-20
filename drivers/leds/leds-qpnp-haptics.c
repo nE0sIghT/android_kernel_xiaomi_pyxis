@@ -497,7 +497,6 @@ static int qpnp_haptics_auto_res_enable(struct hap_chip *chip, bool enable)
 	u32 delay_us = HAPTICS_BACK_EMF_DELAY_US;
 	u8 val;
 	bool auto_res_mode_qwd;
-	bool enableval = enable;
 	if (chip->act_type != HAP_LRA)
 		return 0;
 
@@ -520,11 +519,7 @@ static int qpnp_haptics_auto_res_enable(struct hap_chip *chip, bool enable)
 
 	if (auto_res_mode_qwd && enable)
 		usleep_range(delay_us, delay_us + 1);
-	if(get_hw_version_platform()== HARDWARE_PLATFORM_GRUS){
-		pr_debug("hardcode val=0 upon Qualcomm change solution in HARDWARE_PLATFORM_GRUS;\n");
-		enableval = 0;
-	}
-	val = enableval ? AUTO_RES_EN_BIT : 0;
+	val = enable ? AUTO_RES_EN_BIT : 0;
 
 	if (chip->revid->pmic_subtype == PM660_SUBTYPE)
 		rc = qpnp_haptics_masked_write_reg(chip,
@@ -535,7 +530,7 @@ static int qpnp_haptics_auto_res_enable(struct hap_chip *chip, bool enable)
 				AUTO_RES_EN_BIT, val);
 	if (rc < 0)
 		return rc;
-	if (enableval)
+	if (enable)
 		chip->status_flags |= AUTO_RESONANCE_ENABLED;
 	else
 		chip->status_flags &= ~AUTO_RESONANCE_ENABLED;
@@ -679,7 +674,6 @@ static int qpnp_haptics_mod_enable(struct hap_chip *chip, bool enable)
 			pr_debug("Disabling module forcibly\n");
 	}
 
-	pr_debug("qpnp_haptics_mod_enable %d\n", enable);
 	val = enable ? HAP_EN_BIT : 0;
 	rc = qpnp_haptics_write_reg(chip, HAP_EN_CTL_REG(chip), &val, 1);
 	if (rc < 0)

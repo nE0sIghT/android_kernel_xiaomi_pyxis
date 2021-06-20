@@ -1,5 +1,4 @@
 /* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
- * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -63,7 +62,6 @@ enum cam_isp_ctx_activated_substate {
 	CAM_ISP_CTX_ACTIVATED_BUBBLE_APPLIED,
 	CAM_ISP_CTX_ACTIVATED_HW_ERROR,
 	CAM_ISP_CTX_ACTIVATED_HALT,
-	CAM_ISP_CTX_ACTIVATED_FLUSH,
 	CAM_ISP_CTX_ACTIVATED_MAX,
 };
 
@@ -196,7 +194,6 @@ struct cam_isp_context {
 		CAM_ISP_CTX_STATE_MONITOR_MAX_ENTRIES];
 	bool                             rdi_only_context;
 	atomic_t                         bubble_sof_count;
-	uint32_t                         frame_skip_count;
 };
 
 /**

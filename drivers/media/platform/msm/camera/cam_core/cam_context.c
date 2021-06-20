@@ -1,5 +1,4 @@
 /* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
- * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -41,7 +40,9 @@ static int cam_context_handle_hw_event(void *context, uint32_t evt_id,
 int cam_context_shutdown(struct cam_context *ctx)
 {
 	int rc = 0;
+	int32_t ctx_hdl = ctx->dev_hdl;
 
+	mutex_lock(&ctx->ctx_mutex);
 	if (ctx->state_machine[ctx->state].ioctl_ops.stop_dev) {
 		rc = ctx->state_machine[ctx->state].ioctl_ops.stop_dev(
 			ctx, NULL);
@@ -54,7 +55,10 @@ int cam_context_shutdown(struct cam_context *ctx)
 		if (rc < 0)
 			CAM_ERR(CAM_CORE, "Error while dev release %d", rc);
 	}
+	mutex_unlock(&ctx->ctx_mutex);
 
+	if (!rc)
+		rc = cam_destroy_device_hdl(ctx_hdl);
 	return rc;
 }
 
@@ -159,7 +163,6 @@ int cam_context_handle_crm_apply_req(struct cam_context *ctx,
 		return -EINVAL;
 	}
 
-	mutex_lock(&ctx->ctx_mutex);
 	if (ctx->state_machine[ctx->state].crm_ops.apply_req) {
 		rc = ctx->state_machine[ctx->state].crm_ops.apply_req(ctx,
 			apply);
@@ -168,7 +171,6 @@ int cam_context_handle_crm_apply_req(struct cam_context *ctx,
 			ctx->dev_hdl, ctx->state);
 		rc = -EPROTO;
 	}
-	mutex_unlock(&ctx->ctx_mutex);
 
 	return rc;
 }
@@ -458,7 +460,6 @@ int cam_context_init(struct cam_context *ctx,
 	ctx->ctx_crm_intf = NULL;
 	ctx->crm_ctx_intf = crm_node_intf;
 	ctx->hw_mgr_intf = hw_mgr_intf;
-	ctx->ctx_released = true;
 	ctx->irq_cb_intf = cam_context_handle_hw_event;
 
 	INIT_LIST_HEAD(&ctx->active_req_list);

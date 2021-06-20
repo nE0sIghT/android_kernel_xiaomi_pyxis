@@ -242,18 +242,7 @@ static struct attribute_group attr_group = {
 static int cpumaxfreq_show(struct seq_file *m, void *v)
 {
 	/* value is used for setting cpumaxfreq */
-	switch (get_hw_version_platform()) {
-	case HARDWARE_PLATFORM_GRUS:
-		seq_printf(m, "2.3\n");
-		break;
-	case HARDWARE_PLATFORM_SIRIUS:
-		seq_printf(m, "2.2\n");
-		break;
-	default:
-		seq_printf(m, "2.2\n");
-		pr_err("Unknown hardware version\n");
-		break;
-	}
+	seq_printf(m, "2.2\n");
 
 	return 0;
 }
