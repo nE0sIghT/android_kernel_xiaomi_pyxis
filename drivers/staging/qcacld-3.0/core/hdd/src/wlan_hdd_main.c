@@ -343,6 +343,8 @@ struct sock *cesium_nl_srv_sock;
 static void wlan_hdd_auto_shutdown_cb(void);
 #endif
 
+static int hdd_driver_load(void);
+
 QDF_STATUS hdd_common_roam_callback(struct wlan_objmgr_psoc *psoc,
 				     uint8_t session_id,
 				    struct csr_roam_info *roam_info,
