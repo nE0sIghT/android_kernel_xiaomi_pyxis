@@ -3651,7 +3651,7 @@ static int drv_cmd_set_suspendmode(struct hdd_adapter *adapter,
 	}
 
 	status = sme_set_apf_enable_disable(hdd_adapter_get_mac_handle(adapter),
-					    adapter->session_id, apf_enable);
+					    adapter->vdev_id, apf_enable);
 	if (!QDF_IS_STATUS_SUCCESS(status)) {
 		hdd_err("Unable to post sme apf enable/disable message (status-%d)",
 				status);
