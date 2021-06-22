@@ -4037,6 +4037,7 @@ exit:
 	return ret;
 }
 
+#if 0
 static int drv_cmd_set_suspend_mode(struct hdd_adapter *adapter,
 				    struct hdd_context *hdd_ctx,
 				    uint8_t *command,
@@ -4076,6 +4077,7 @@ static int drv_cmd_set_suspend_mode(struct hdd_adapter *adapter,
 	}
 	return 0;
 }
+#endif
 
 static int drv_cmd_get_roam_mode(struct hdd_adapter *adapter,
 				 struct hdd_context *hdd_ctx,
