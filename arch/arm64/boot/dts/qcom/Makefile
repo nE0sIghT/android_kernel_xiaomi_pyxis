@@ -112,7 +112,7 @@ dtb-$(CONFIG_ARCH_SDM845) += sdm845-sim.dtb \
 endif
 
 ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
-	dtbo-$(CONFIG_ARCH_SDM670) +=
+	dtbo-$(CONFIG_ARCH_SDM670) += \
 		pyxis-sdm710-overlay.dtbo
 
 sdm670-cdp-overlay.dtbo-base := sdm670.dtb
