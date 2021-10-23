@@ -1,4 +1,5 @@
 /* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -204,6 +205,7 @@ static int cam_vfe_camif_resource_deinit(
 
 }
 
+extern uint32_t g_operation_mode;
 static int cam_vfe_camif_resource_start(
 	struct cam_isp_resource_node        *camif_res)
 {
@@ -265,12 +267,19 @@ static int cam_vfe_camif_resource_start(
 	switch (camera_hw_version) {
 	case CAM_CPAS_TITAN_175_V101:
 	case CAM_CPAS_TITAN_175_V100:
-		epoch0_irq_mask = ((rsrc_data->last_line -
+		if (g_operation_mode == 0x803C)
+			epoch0_irq_mask = ((1499 - rsrc_data->first_line) * 2 / 3) +
+				rsrc_data->first_line; //hardcode......
+		else
+			epoch0_irq_mask = ((rsrc_data->last_line -
 				rsrc_data->first_line) / 2) +
 				rsrc_data->first_line;
 		epoch1_irq_mask = rsrc_data->reg_data->epoch_line_cfg &
 				0xFFFF;
-		computed_epoch_line_cfg = (epoch0_irq_mask << 16) |
+		if (g_operation_mode == 0)
+			computed_epoch_line_cfg = rsrc_data->reg_data->epoch_line_cfg;
+		else
+			computed_epoch_line_cfg = (epoch0_irq_mask << 16) |
 				epoch1_irq_mask;
 		cam_io_w_mb(computed_epoch_line_cfg,
 				rsrc_data->mem_base +

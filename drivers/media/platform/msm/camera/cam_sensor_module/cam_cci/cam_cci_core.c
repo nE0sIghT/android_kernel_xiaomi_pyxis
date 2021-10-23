@@ -1,4 +1,5 @@
 /* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -561,6 +562,7 @@ void cam_cci_get_clk_rates(struct cci_device *cci_dev,
 	}
 }
 
+extern uint32_t g_operation_mode;
 static int32_t cam_cci_set_clk_param(struct cci_device *cci_dev,
 	struct cam_cci_ctrl *c_ctrl)
 {
@@ -570,6 +572,14 @@ static int32_t cam_cci_set_clk_param(struct cci_device *cci_dev,
 	struct cam_hw_soc_info *soc_info =
 		&cci_dev->soc_info;
 	void __iomem *base = soc_info->reg_map[0].mem_base;
+
+		if (g_operation_mode == 0x8006) {
+			i2c_freq_mode = I2C_FAST_PLUS_MODE;
+			CAM_DBG(CAM_CCI, "face_unlock mode, set i2c_freq_mode to fast plus mode.");
+		} else {
+			i2c_freq_mode = c_ctrl->cci_info->i2c_freq_mode;
+			CAM_DBG(CAM_CCI, "normal mode, set i2c_freq_mode according to driver's setting.");
+		}
 
 	if ((i2c_freq_mode >= I2C_MAX_MODES) || (i2c_freq_mode < 0)) {
 		CAM_ERR(CAM_CCI, "invalid i2c_freq_mode = %d", i2c_freq_mode);
