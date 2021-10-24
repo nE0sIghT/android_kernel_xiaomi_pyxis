@@ -472,10 +472,8 @@ static int32_t cam_cci_calc_cmd_len(struct cci_device *cci_dev,
 			if (cmd->delay || ((cmd - i2c_cmd) >= (cmd_size - 1)))
 				break;
 			if ((cmd->reg_addr + 1 == (cmd+1)->reg_addr)
-#ifdef CONFIG_MACH_XIAOMI_F3B
 			    /* for s5kgd1 cci timeout problem on Pyxis */
 			    && (c_ctrl->cci_info->sid != 0x2d)
-#endif
 			   ) {
 				len += data_len;
 				if (len > cci_dev->payload_size) {
@@ -577,12 +575,10 @@ static int32_t cam_cci_set_clk_param(struct cci_device *cci_dev,
 		&cci_dev->soc_info;
 	void __iomem *base = soc_info->reg_map[0].mem_base;
 
-#if defined(CONFIG_MACH_XIAOMI_F3B) || defined(CONFIG_MACH_XIAOMI_F3M)
 	if (g_operation_mode == 0x8006) {
 		CAM_DBG(CAM_CCI, "Face-unlock: forcing I2C fast plus mode");
 		i2c_freq_mode = I2C_FAST_PLUS_MODE;
 	}
-#endif
 
 	if ((i2c_freq_mode >= I2C_MAX_MODES) || (i2c_freq_mode < 0)) {
 		CAM_ERR(CAM_CCI, "invalid i2c_freq_mode = %d", i2c_freq_mode);
@@ -1588,7 +1584,6 @@ static int32_t cam_cci_write(struct v4l2_subdev *sd,
 	case MSM_CCI_I2C_WRITE:
 	case MSM_CCI_I2C_WRITE_SEQ:
 	case MSM_CCI_I2C_WRITE_BURST:
-#ifndef CONFIG_MACH_XIAOMI_SDM710
 		for (i = 0; i < NUM_QUEUES; i++) {
 			if (mutex_trylock(&cci_master_info->mutex_q[i])) {
 				rc = cam_cci_i2c_write(sd, c_ctrl, i,
@@ -1597,7 +1592,6 @@ static int32_t cam_cci_write(struct v4l2_subdev *sd,
 				return rc;
 			}
 		}
-#endif
 		mutex_lock(&cci_master_info->mutex_q[PRIORITY_QUEUE]);
 		rc = cam_cci_i2c_write(sd, c_ctrl,
 			PRIORITY_QUEUE, MSM_SYNC_DISABLE);

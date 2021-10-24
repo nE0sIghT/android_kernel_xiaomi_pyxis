@@ -285,7 +285,6 @@ static int cam_vfe_camif_resource_start(
 				computed_epoch_line_cfg);
 		break;
 	case CAM_CPAS_TITAN_170_V110:
-#ifdef CONFIG_MACH_XIAOMI
 		if (g_operation_mode) {
 			if (g_operation_mode != 0x803C)
 				epoch0_irq_mask = rsrc_data->last_line * 2;
@@ -303,7 +302,6 @@ static int cam_vfe_camif_resource_start(
 			break;
 		}
 		/* passthrough for operation_mode == 0 */
-#endif
 	case CAM_CPAS_TITAN_170_V100:
 	case CAM_CPAS_TITAN_170_V120:
 		cam_io_w_mb(rsrc_data->reg_data->epoch_line_cfg,
